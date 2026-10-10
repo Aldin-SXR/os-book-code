@@ -1,0 +1,26 @@
+# clangd has no compile_commands.json for these directories, so it falls back
+# to the host toolchain: 64-bit, hosted, with a standard library. Every kernel
+# file then fails `_Static_assert(sizeof(void *) == 4)` on its first include,
+# and the editor reports an error that the real build does not have.
+#
+# These flags are the CFLAGS from each chapter's Makefile, minus the warning
+# and optimisation switches, which clangd does not need.
+
+CompileFlags:
+  Add:
+    - -target
+    - i386-none-elf
+    - -ffreestanding
+    - -fno-stack-protector
+    - -fno-pic
+    - -mno-sse
+    - -std=c11
+  Compiler: clang
+
+# clangd's include-cleaner reports a header as unused when nothing names a
+# symbol from it directly. These kernels include `types.h` for its fixed-width
+# typedefs and for the static assertion inside it, which the check cannot see,
+# so it reports headers the build genuinely needs.
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
