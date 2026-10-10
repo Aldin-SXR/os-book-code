@@ -2,9 +2,21 @@
  * what the request actually costs. Runs on the host, not on spark.
  *
  *     cc -O0 -o overcommit overcommit.c && ./overcommit
+ *
+ * macOS hands the 64 GiB to malloc without a word. Linux, in its default
+ * setting, turns down any single request larger than RAM plus swap, so on a
+ * Linux machine (and under WSL2) malloc returns NULL here. The program then
+ * asks again with mmap and MAP_NORESERVE, which tells the kernel not to set
+ * the memory aside in advance, and that request is granted. Either way the
+ * promise is far larger than the machine, and the cost is a few pages.
  */
+/* -std=c11 hides everything beyond ISO C, and glibc then leaves MAP_ANON and
+ * MAP_NORESERVE out of <sys/mman.h>. This asks for them back. */
+#define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 #include <sys/resource.h>
 
 #if defined(__APPLE__)
@@ -46,8 +58,14 @@ int main(void)
 
     char *block = malloc(wanted);
     if (block == NULL) {
-        printf("malloc(%zu) failed\n", wanted);
-        return 1;
+        printf("malloc refused it; asking with MAP_NORESERVE\n");
+        void *map = mmap(NULL, wanted, PROT_READ | PROT_WRITE,
+                         MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0);
+        if (map == MAP_FAILED) {
+            printf("mmap(%zu) failed as well\n", wanted);
+            return 1;
+        }
+        block = map;
     }
 
     /* Touch both ends, so nobody can say the memory was never real. */

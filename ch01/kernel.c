@@ -16,8 +16,8 @@
 #define VGA_WIDTH  80
 #define VGA_HEIGHT 25
 
-/* Attribute byte: foreground in the low nibble, background in the high one.
- * 0x0F is white on black. */
+/* Attribute byte: foreground in bits 3-0, background in bits 6-4, and bit 7
+ * makes the character blink. 0x0F is white on black, not blinking. */
 #define COLOUR 0x0F
 
 void kmain(void)

@@ -5,7 +5,7 @@
 
 ; The Multiboot header. A boot loader scans the first 8 KiB of the kernel
 ; file for MAGIC; the flags state what the kernel requires of it, and the
-; checksum distinguishes a real header from three bytes that happen to
+; checksum distinguishes a real header from twelve bytes that happen to
 ; match.
 MBALIGN  equ 1 << 0              ; load modules on page boundaries
 MEMINFO  equ 1 << 1              ; request a memory map
@@ -20,8 +20,9 @@ align 4
     dd CHECKSUM
 
 ; The stack. No C code can run without one and the loader provides none.
-; 16 KiB, aligned to 16 bytes as the calling convention requires, and in .bss
-; so that it occupies no space in the image.
+; 16 KiB, in .bss so that it occupies no space in the image, and aligned to
+; 16 bytes: the 32-bit System V ABI asks for that at every call, and clang's
+; bare-metal target, which only assumes 4, is satisfied by it too.
 section .bss
 align 16
 stack_bottom:
