@@ -5,8 +5,8 @@
 ;
 ; The file is 16-bit for most of its length and 32-bit after the switch to
 ; protected mode, which is one way. It is assembly throughout because there is
-; no usable stack at entry, no current C compiler targets 16-bit real mode,
-; and several of the instructions here have no expression in C.
+; no usable stack at entry, the compilers this book uses do not produce true
+; 16-bit code, and several of the instructions here have no expression in C.
 
 bits 16
 org 0x7C00                       ; the firmware loads us here, always

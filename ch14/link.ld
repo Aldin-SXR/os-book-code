@@ -18,8 +18,8 @@ SECTIONS
      * global the kernel adds. */
     _kernel_start = .;
 
-    /* .multiboot comes first, and first in the file, so the boot loader finds
-     * the header inside the 8 KiB it is willing to search for it. */
+    /* .text.entry comes first and .multiboot straight after it, so the
+     * Multiboot header sits inside the first 8 KiB, where a loader looks. */
     .text ALIGN(4K) :
     {
         /* .text.entry holds _start alone and is placed first so that the
